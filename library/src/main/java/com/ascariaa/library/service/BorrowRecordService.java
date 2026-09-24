@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -67,5 +69,13 @@ public class BorrowRecordService {
 
         bookRepository.save(book);
         return borrowRecordMapper.toDto(borrowRecordRepository.save(record));
+    }
+
+    @Transactional(readOnly = true)
+    public List<BorrowRecordDto> getActiveRecordsByUser(UUID userId) {
+        return borrowRecordRepository.findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE)
+                .stream()
+                .map(borrowRecordMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

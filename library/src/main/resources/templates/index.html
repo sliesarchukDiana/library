@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Library</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; margin-bottom: 40px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .error { color: red; margin-bottom: 10px; font-weight: bold; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .btn { padding: 5px 10px; cursor: pointer; }
+        .btn-danger { background-color: #dc3545; color: white; border: none; }
+        .btn-success { background-color: #28a745; color: white; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Library Catalog</h1>
+    <div sec:authorize="isAuthenticated()">
+        <span>Welcome, <b th:text="${username}">User</b>!</span>
+        <form th:action="@{/logout}" method="post" style="display:inline; margin-left: 10px;">
+            <button type="submit" class="btn">Logout</button>
+        </form>
+    </div>
+</div>
+
+<div th:if="${error}" class="error" th:text="${error}"></div>
+
+<!-- Секция управления для администратора -->
+<div sec:authorize="hasRole('ADMIN')" style="margin-bottom: 20px;">
+    <a th:href="@{/ui/books/new}" class="btn btn-success" style="text-decoration: none;">+ Add New Book</a>
+</div>
+
+<h2>All Books</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Available Copies</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="book : ${books}">
+        <td th:text="${book.id}">1</td>
+        <td th:text="${book.title}">Book Title</td>
+        <td th:text="${book.author}">Author</td>
+        <td th:text="${book.availableCopies}">0</td>
+        <td>
+            <form th:if="${book.availableCopies > 0}" th:action="@{/ui/borrow/{id}(id=${book.id})}" method="post" style="display:inline;">
+                <button type="submit" class="btn">Borrow</button>
+            </form>
+            <span th:if="${book.availableCopies == 0}" style="color: gray;">Unavailable</span>
+
+            <form sec:authorize="hasRole('ADMIN')" th:action="@{/ui/books/delete/{id}(id=${book.id})}" method="post" style="display:inline; margin-left: 10px;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Секция текущих книг пользователя -->
+<div sec:authorize="isAuthenticated()">
+    <h2>My Borrowed Books</h2>
+    <table th:if="${not #lists.isEmpty(myBooks)}">
+        <thead>
+        <tr>
+            <th>Record ID</th>
+            <th>Book Title</th>
+            <th>Borrow Date</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="record : ${myBooks}">
+            <td th:text="${record.id}">1</td>
+            <td th:text="${record.bookTitle}">Title</td>
+            <td th:text="${#temporals.format(record.borrowDate, 'dd-MM-yyyy HH:mm')}">Date</td>
+            <td>
+                <form th:action="@{/ui/borrow/return/{id}(id=${record.id})}" method="post">
+                    <button type="submit" class="btn">Return Book</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <p th:if="${#lists.isEmpty(myBooks)}">You have no active borrowed books.</p>
+</div>
+
+</body>
+</html>

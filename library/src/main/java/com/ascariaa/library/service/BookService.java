@@ -3,8 +3,10 @@ package com.ascariaa.library.service;
 import com.ascariaa.library.dto.BookCreateDto;
 import com.ascariaa.library.dto.BookDto;
 import com.ascariaa.library.entity.Book;
+import com.ascariaa.library.entity.enums.BorrowStatus;
 import com.ascariaa.library.mapper.BookMapper;
 import com.ascariaa.library.repository.BookRepository;
+import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
+    private final BorrowRecordRepository borrowRecordRepository;
 
     @Transactional(readOnly = true)
     public List<BookDto> getAllBooks() {
@@ -50,6 +53,13 @@ public class BookService {
         if (!bookRepository.existsById(id)) {
             throw new EntityNotFoundException("Book not found");
         }
+
+        if (borrowRecordRepository.existsByBookIdAndStatus(id, BorrowStatus.ACTIVE)) {
+            throw new IllegalStateException("Cannot delete book: it is currently borrowed by a user.");
+        }
+
+        borrowRecordRepository.deleteByBookId(id);
+
         bookRepository.deleteById(id);
     }
 
