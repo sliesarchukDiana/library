@@ -6,6 +6,7 @@ import com.ascariaa.library.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,17 +30,20 @@ public class BookController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public BookDto createBook(@Valid @RequestBody BookCreateDto dto) {
         return bookService.createBook(dto);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public BookDto updateBook(@PathVariable Long id, @Valid @RequestBody BookCreateDto dto) {
         return bookService.updateBook(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
     }
