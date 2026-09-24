@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/library_db
+    username: library_user
+    password: library_password
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: library-client
+            client-secret: xAUw4qGdRZ5gkyGVRLZUILgp3wJSr80u
+            scope: [openid, profile]
+            authorization-grant-type: authorization_code
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/library-realm
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/library-realm
