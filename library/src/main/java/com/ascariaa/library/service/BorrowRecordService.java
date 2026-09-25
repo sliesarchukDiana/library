@@ -35,7 +35,7 @@ public class BorrowRecordService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Book not found"));
 
-        if (book.getAvailableCopies() <= 0) {
+        if (book.getAvailableCopies() <= 0) { //failed test case
             throw new IllegalStateException("No available copies for this book");
         }
 
