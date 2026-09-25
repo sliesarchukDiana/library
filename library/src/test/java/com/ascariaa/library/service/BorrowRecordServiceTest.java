@@ -10,6 +10,8 @@ import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -79,16 +81,19 @@ class BorrowRecordServiceTest {
         verify(bookRepository, never()).findById(any());
     }
 
-    @Test
-    void borrowBook_noAvailableCopies_throwsIllegalStateException() {
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, -10})
+    void borrowBook_noAvailableCopies_throwsIllegalStateException(int copies) {
         Long bookId = 1L;
         UUID userId = UUID.randomUUID();
-        Book book = Book.builder().id(bookId).availableCopies(0).build();
+        Book book = Book.builder().id(bookId).availableCopies(copies).build();
 
         when(borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE)).thenReturn(1L);
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
 
-        assertThrows(IllegalStateException.class, () -> borrowRecordService.borrowBook(bookId, userId)); // AC2
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> borrowRecordService.borrowBook(bookId, userId));
+        assertEquals("No available copies for this book", exception.getMessage());
     }
 
     @Test
@@ -98,7 +103,7 @@ class BorrowRecordServiceTest {
         when(borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE)).thenReturn(1L);
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> borrowRecordService.borrowBook(bookId, userId)); // AC2
+        assertThrows(EntityNotFoundException.class, () -> borrowRecordService.borrowBook(bookId, userId));
     }
 
     @Test
@@ -145,7 +150,7 @@ class BorrowRecordServiceTest {
         when(borrowRecordRepository.findByIdAndKeycloakUserId(recordId, userId)).thenReturn(Optional.of(record));
 
 
-        assertThrows(IllegalStateException.class, () -> borrowRecordService.returnBook(recordId, userId)); // AC2
+        assertThrows(IllegalStateException.class, () -> borrowRecordService.returnBook(recordId, userId));
     }
 
     @Test
@@ -161,6 +166,6 @@ class BorrowRecordServiceTest {
         List<BorrowRecordDto> result = borrowRecordService.getActiveRecordsByUser(userId);
 
         assertEquals(1, result.size());
-        verify(borrowRecordRepository).findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE); // AC7
+        verify(borrowRecordRepository).findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE);
     }
 }
