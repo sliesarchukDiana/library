@@ -185,13 +185,12 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
 				<configuration>
-					<excludes>
-						<exclude>com/ascariaa/library/dto/**</exclude>
-						<exclude>com/ascariaa/library/entity/**</exclude>
-						<exclude>com/ascariaa/library/exception/**</exclude>
-						<exclude>com/ascariaa/library/config/**</exclude>
-						<exclude>com/ascariaa/library/*Application.*</exclude>
-					</excludes>
+<!--					<excludes>-->
+<!--						<exclude>com/ascariaa/library/dto/**</exclude>-->
+<!--						<exclude>com/ascariaa/library/entity/**</exclude>-->
+<!--						<exclude>com/ascariaa/library/exception/**</exclude>-->
+<!--						<exclude>com/ascariaa/library/config/**</exclude>-->
+<!--					</excludes>-->
 				</configuration>
 				<executions>
 					<execution>
