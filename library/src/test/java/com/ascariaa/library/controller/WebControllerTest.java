@@ -117,4 +117,35 @@ class WebControllerTest {
         assertEquals("index", view);
         verify(model).addAttribute("error", "Cannot delete");
     }
+
+    @Test
+    void returnBook_success_redirects() {
+        Long recordId = 1L;
+        UUID userId = UUID.randomUUID();
+        when(oidcUser.getSubject()).thenReturn(userId.toString());
+
+        String view = webController.returnBook(recordId, oidcUser, model);
+
+        assertEquals("redirect:/", view);
+        verify(borrowRecordService).returnBook(recordId, userId);
+    }
+
+    @Test
+    void returnBook_exception_addsErrorAndReturnsIndex() {
+        Long recordId = 1L;
+        UUID userId = UUID.randomUUID();
+        when(oidcUser.getSubject()).thenReturn(userId.toString());
+        when(oidcUser.getPreferredUsername()).thenReturn("testuser");
+
+        doThrow(new IllegalStateException("Book is already returned"))
+                .when(borrowRecordService).returnBook(recordId, userId);
+
+        String view = webController.returnBook(recordId, oidcUser, model);
+
+        assertEquals("index", view);
+        verify(model).addAttribute("error", "Book is already returned");
+        verify(model).addAttribute("username", "testuser");
+        verify(borrowRecordService).getActiveRecordsByUser(userId);
+        verify(bookService).getAllBooks();
+    }
 }
