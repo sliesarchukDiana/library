@@ -1,5 +1,7 @@
 package com.ascariaa.library.controller;
 
+import com.ascariaa.library.domain.annotation.CurrentUserId;
+import com.ascariaa.library.domain.annotation.PostCreated;
 import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.service.BorrowRecordService;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +19,10 @@ public class BorrowRecordController {
 
     private final BorrowRecordService borrowRecordService;
 
-    @PostMapping("/{bookId}")
+    @PostCreated("/{bookId}")
     public BorrowRecordDto borrowBook(
             @PathVariable Long bookId,
-            @AuthenticationPrincipal Jwt jwt) {
-
-        UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getSubject()));
+            @CurrentUserId UUID userId) {
         return borrowRecordService.borrowBook(bookId, userId);
     }
 

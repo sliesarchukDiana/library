@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -61,10 +62,18 @@ public class WebController {
         return "book-form";
     }
 
-    @PostMapping("/ui/books")
-    public String createBook(@ModelAttribute("book") @Valid BookCreateDto bookCreateDto) {
+    @PostMapping("/books")
+    public String createBook(
+            @Valid @ModelAttribute("book") BookCreateDto bookCreateDto,
+            BindingResult bindingResult,
+            Model model) {
+
+        if (bindingResult.hasErrors()) {
+            return "book-form";
+        }
+
         bookService.createBook(bookCreateDto);
-        return "redirect:/";
+        return "redirect:/"; // Успішне збереження
     }
 
     @PostMapping("/ui/books/delete/{id}")

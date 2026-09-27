@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 
 import java.util.UUID;
 
@@ -93,7 +94,12 @@ class WebControllerTest {
     @Test
     void createBook_redirects() {
         BookCreateDto dto = new BookCreateDto();
-        String view = webController.createBook(dto);
+        BindingResult bindingResult = mock(BindingResult.class);
+        Model model = mock(Model.class);
+
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        String view = webController.createBook(dto, bindingResult, model);
 
         assertEquals("redirect:/", view);
         verify(bookService).createBook(dto);

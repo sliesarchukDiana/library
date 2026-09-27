@@ -17,4 +17,7 @@ public @interface PostCreated {
 
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] value() default {};
+
+    @AliasFor(annotation = RequestMapping.class, attribute = "path")
+    String[] path() default {};
 }

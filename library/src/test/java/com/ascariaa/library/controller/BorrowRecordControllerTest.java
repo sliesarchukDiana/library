@@ -31,14 +31,13 @@ class BorrowRecordControllerTest {
     void borrowBook_callsService_returnsDto() {
         Long bookId = 1L;
         UUID userId = UUID.randomUUID();
-        BorrowRecordDto expected = new BorrowRecordDto();
+        BorrowRecordDto expectedDto = new BorrowRecordDto();
 
-        when(jwt.getSubject()).thenReturn(userId.toString());
-        when(borrowRecordService.borrowBook(bookId, userId)).thenReturn(expected);
+        when(borrowRecordService.borrowBook(bookId, userId)).thenReturn(expectedDto);
 
-        BorrowRecordDto actual = borrowRecordController.borrowBook(bookId, jwt);
+        BorrowRecordDto actualDto = borrowRecordController.borrowBook(bookId, userId);
 
-        assertEquals(expected, actual);
+        assertEquals(expectedDto, actualDto);
         verify(borrowRecordService).borrowBook(bookId, userId);
     }
 
