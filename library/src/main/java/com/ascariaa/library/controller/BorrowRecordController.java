@@ -1,6 +1,6 @@
 package com.ascariaa.library.controller;
 
-import com.ascariaa.library.dto.BorrowRecordDto;
+import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.service.BorrowRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

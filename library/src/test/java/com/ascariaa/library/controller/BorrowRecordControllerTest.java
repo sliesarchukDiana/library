@@ -1,6 +1,6 @@
 package com.ascariaa.library.controller;
 
-import com.ascariaa.library.dto.BorrowRecordDto;
+import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.service.BorrowRecordService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

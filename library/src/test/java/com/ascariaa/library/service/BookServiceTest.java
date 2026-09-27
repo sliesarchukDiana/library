@@ -1,10 +1,10 @@
 package com.ascariaa.library.service;
 
-import com.ascariaa.library.dto.BookCreateDto;
-import com.ascariaa.library.dto.BookDto;
-import com.ascariaa.library.entity.Book;
-import com.ascariaa.library.entity.enums.BorrowStatus;
-import com.ascariaa.library.mapper.BookMapper;
+import com.ascariaa.library.domain.dto.BookCreateDto;
+import com.ascariaa.library.domain.dto.BookDto;
+import com.ascariaa.library.domain.entity.Book;
+import com.ascariaa.library.domain.enums.BorrowStatus;
+import com.ascariaa.library.domain.mapper.BookMapper;
 import com.ascariaa.library.repository.BookRepository;
 import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;

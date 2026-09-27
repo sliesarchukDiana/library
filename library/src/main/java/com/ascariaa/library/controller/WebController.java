@@ -1,6 +1,6 @@
 package com.ascariaa.library.controller;
 
-import com.ascariaa.library.dto.BookCreateDto;
+import com.ascariaa.library.domain.dto.BookCreateDto;
 import com.ascariaa.library.service.BookService;
 import com.ascariaa.library.service.BorrowRecordService;
 import jakarta.validation.Valid;

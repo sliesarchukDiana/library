@@ -1,4 +1,4 @@
-package com.ascariaa.library.entity.enums;
+package com.ascariaa.library.domain.enums;
 
 public enum BorrowStatus {
     ACTIVE,

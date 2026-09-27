@@ -1,7 +1,7 @@
 package com.ascariaa.library.controller;
 
-import com.ascariaa.library.dto.BookCreateDto;
-import com.ascariaa.library.dto.BookDto;
+import com.ascariaa.library.domain.dto.BookCreateDto;
+import com.ascariaa.library.domain.dto.BookDto;
 import com.ascariaa.library.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

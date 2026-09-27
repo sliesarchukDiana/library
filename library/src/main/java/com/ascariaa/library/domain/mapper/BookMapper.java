@@ -1,8 +1,8 @@
-package com.ascariaa.library.mapper;
+package com.ascariaa.library.domain.mapper;
 
-import com.ascariaa.library.dto.BookCreateDto;
-import com.ascariaa.library.dto.BookDto;
-import com.ascariaa.library.entity.Book;
+import com.ascariaa.library.domain.dto.BookCreateDto;
+import com.ascariaa.library.domain.dto.BookDto;
+import com.ascariaa.library.domain.entity.Book;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;

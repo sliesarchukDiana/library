@@ -1,4 +1,4 @@
-package com.ascariaa.library.dto;
+package com.ascariaa.library.domain.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

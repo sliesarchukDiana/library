@@ -1,7 +1,7 @@
 package com.ascariaa.library.repository;
 
-import com.ascariaa.library.entity.BorrowRecord;
-import com.ascariaa.library.entity.enums.BorrowStatus;
+import com.ascariaa.library.domain.entity.BorrowRecord;
+import com.ascariaa.library.domain.enums.BorrowStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

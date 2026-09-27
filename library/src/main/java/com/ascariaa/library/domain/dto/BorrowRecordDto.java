@@ -1,6 +1,6 @@
-package com.ascariaa.library.dto;
+package com.ascariaa.library.domain.dto;
 
-import com.ascariaa.library.entity.enums.BorrowStatus;
+import com.ascariaa.library.domain.enums.BorrowStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;

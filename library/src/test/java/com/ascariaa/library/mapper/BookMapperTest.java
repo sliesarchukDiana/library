@@ -1,8 +1,10 @@
 package com.ascariaa.library.mapper;
 
-import com.ascariaa.library.dto.BookCreateDto;
-import com.ascariaa.library.dto.BookDto;
-import com.ascariaa.library.entity.Book;
+import com.ascariaa.library.domain.dto.BookCreateDto;
+import com.ascariaa.library.domain.dto.BookDto;
+import com.ascariaa.library.domain.entity.Book;
+import com.ascariaa.library.domain.mapper.BookMapper;
+import com.ascariaa.library.domain.mapper.BookMapperImpl;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -1,4 +1,4 @@
-package com.ascariaa.library.dto;
+package com.ascariaa.library.domain.dto;
 
 import lombok.Data;
 

@@ -1,7 +1,7 @@
-package com.ascariaa.library.mapper;
+package com.ascariaa.library.domain.mapper;
 
-import com.ascariaa.library.dto.BorrowRecordDto;
-import com.ascariaa.library.entity.BorrowRecord;
+import com.ascariaa.library.domain.dto.BorrowRecordDto;
+import com.ascariaa.library.domain.entity.BorrowRecord;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;

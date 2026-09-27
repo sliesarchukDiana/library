@@ -1,4 +1,4 @@
-package com.ascariaa.library.entity;
+package com.ascariaa.library.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
