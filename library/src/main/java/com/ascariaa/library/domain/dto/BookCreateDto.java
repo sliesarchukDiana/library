@@ -1,11 +1,13 @@
 package com.ascariaa.library.domain.dto;
 
+import com.ascariaa.library.domain.annotation.ValidBook;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
+@ValidBook
 public class BookCreateDto {
     @NotBlank(message = "Title cannot be blank")
     private String title;

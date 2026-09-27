@@ -1,5 +1,6 @@
 package com.ascariaa.library.controller;
 
+import com.ascariaa.library.domain.annotation.PostCreated;
 import com.ascariaa.library.domain.dto.BookCreateDto;
 import com.ascariaa.library.domain.dto.BookDto;
 import com.ascariaa.library.service.BookService;
@@ -28,8 +29,7 @@ public class BookController {
         return bookService.getBookById(id);
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @PostCreated
     @PreAuthorize("hasRole('ADMIN')")
     public BookDto createBook(@Valid @RequestBody BookCreateDto dto) {
         return bookService.createBook(dto);
