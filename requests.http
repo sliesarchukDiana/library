@@ -4,7 +4,7 @@
 POST http://localhost:8080/realms/library-realm/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-client_id=library-client&client_secret=xAUw4qGdRZ5gkyGVRLZUILgp3wJSr80u&grant_type=password&username=testuser&password=1234567890
+client_id=library-client&client_secret=wr1KEOx6JiBLngtW13XcwDerF402RWo3&grant_type=password&username=testuser&password=1234567890
 
 > {%
     client.global.set("token", response.body.access_token);
