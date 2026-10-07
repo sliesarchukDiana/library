@@ -1,4 +1,4 @@
-package com.ascariaa.library.validator;
+package com.ascariaa.library.domain.validation;
 
 import com.ascariaa.library.domain.dto.BookCreateDto;
 import jakarta.validation.ConstraintViolation;

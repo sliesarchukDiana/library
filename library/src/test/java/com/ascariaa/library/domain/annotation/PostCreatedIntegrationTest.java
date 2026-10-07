@@ -1,4 +1,4 @@
-package com.ascariaa.library.annotation;
+package com.ascariaa.library.domain.annotation;
 
 import com.ascariaa.library.domain.annotation.PostCreated;
 import org.junit.jupiter.api.BeforeEach;

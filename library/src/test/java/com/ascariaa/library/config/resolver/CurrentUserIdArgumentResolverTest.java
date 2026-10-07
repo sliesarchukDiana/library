@@ -1,4 +1,4 @@
-package com.ascariaa.library.resolver;
+package com.ascariaa.library.config.resolver;
 
 import com.ascariaa.library.config.resolver.CurrentUserIdArgumentResolver;
 import com.ascariaa.library.domain.annotation.CurrentUserId;

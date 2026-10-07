@@ -1,4 +1,4 @@
-package com.ascariaa.library.mapper;
+package com.ascariaa.library.domain.mapper;
 
 import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.domain.entity.Book;

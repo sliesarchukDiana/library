@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/library_db
+    url: jdbc:postgresql://localhost:5433/library_db
     username: library_user
     password: library_password
   jpa:
@@ -18,7 +18,7 @@ spring:
         registration:
           keycloak:
             client-id: library-client
-            client-secret: xAUw4qGdRZ5gkyGVRLZUILgp3wJSr80u
+            client-secret: wr1KEOx6JiBLngtW13XcwDerF402RWo3
             scope: [openid, profile]
             authorization-grant-type: authorization_code
         provider:
