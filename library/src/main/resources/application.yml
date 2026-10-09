@@ -18,7 +18,7 @@ spring:
         registration:
           keycloak:
             client-id: library-client
-            client-secret: wr1KEOx6JiBLngtW13XcwDerF402RWo3
+            client-secret: qyqux3p2Jehjr7QpiB1SDN82McXKSF6a
             scope: [openid, profile]
             authorization-grant-type: authorization_code
         provider:
