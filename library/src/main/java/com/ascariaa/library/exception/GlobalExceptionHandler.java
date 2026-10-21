@@ -6,6 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.core.task.TaskRejectedException;
+import java.util.concurrent.TimeoutException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -57,7 +59,29 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                "Internal server error occurred"
+                "Internal server error occurred."
+        );
+    }
+
+    @ExceptionHandler(TaskRejectedException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public ErrorResponse handleTaskRejected(TaskRejectedException ex) {
+        return new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(),
+                "Too many requests. Try again later."
+        );
+    }
+
+    @ExceptionHandler(TimeoutException.class)
+    @ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
+    public ErrorResponse handleTimeout(TimeoutException ex) {
+        return new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.REQUEST_TIMEOUT.value(),
+                HttpStatus.REQUEST_TIMEOUT.getReasonPhrase(),
+                "Time of waiting has run out."
         );
     }
 }
