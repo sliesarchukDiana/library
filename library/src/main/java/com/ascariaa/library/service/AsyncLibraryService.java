@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -12,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 public class AsyncLibraryService {
 
     @Async
-    public void sendBorrowNotification(Long recordId, String email) {
+    public void sendNotification(Long recordId, String email) {
         log.info("Sending email to {} in thread {}", recordId, Thread.currentThread().getName());
         simulateDelay(500);
         if (email == null || email.isBlank()) {
@@ -45,5 +46,13 @@ public class AsyncLibraryService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    @Async
+    public void sendBookBorrowedNotification(UUID userId, String bookTitle, java.time.LocalDateTime borrowDate) {
+        log.info("Sending email to the user with ID {}: You've borrowed the book '{}'. Date: {} in thread {}",
+                userId, bookTitle, borrowDate, Thread.currentThread().getName());
+        simulateDelay(500);
+        log.info("Email was sent successfully!");
     }
 }

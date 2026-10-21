@@ -33,7 +33,7 @@ public class AsyncBookController {
 
     @PostMapping("/notify/{recordId}")
     public ResponseEntity<Void> triggerNotification(@PathVariable Long recordId, @RequestParam(required = false) String email) {
-        asyncLibraryService.sendBorrowNotification(recordId, email);
+        asyncLibraryService.sendNotification(recordId, email);
         return ResponseEntity.accepted().build();
     }
 }

@@ -37,6 +37,9 @@ class BorrowRecordServiceTest {
     @Mock
     private BorrowRecordMapper borrowRecordMapper;
 
+    @Mock
+    private AsyncLibraryService asyncLibraryService;
+
     @InjectMocks
     private BorrowRecordService borrowRecordService;
 

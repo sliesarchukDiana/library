@@ -24,6 +24,7 @@ public class BorrowRecordService {
     private final BorrowRecordRepository borrowRecordRepository;
     private final BookRepository bookRepository;
     private final BorrowRecordMapper borrowRecordMapper;
+    private final AsyncLibraryService asyncLibraryService;
 
     @Transactional
     public BorrowRecordDto borrowBook(Long bookId, UUID userId) {
@@ -35,7 +36,7 @@ public class BorrowRecordService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Book not found"));
 
-        if (book.getAvailableCopies() <= 0) { //failed test case
+        if (book.getAvailableCopies() <= 0) {
             throw new IllegalStateException("No available copies for this book");
         }
 
@@ -49,7 +50,10 @@ public class BorrowRecordService {
                 .status(BorrowStatus.ACTIVE)
                 .build();
 
-        return borrowRecordMapper.toDto(borrowRecordRepository.save(record));
+        BorrowRecord savedRecord = borrowRecordRepository.save(record);
+        asyncLibraryService.sendBookBorrowedNotification(userId, book.getTitle(), savedRecord.getBorrowDate());
+
+        return borrowRecordMapper.toDto(savedRecord);
     }
 
     @Transactional
