@@ -27,3 +27,10 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/realms/library-realm
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
+    properties:
+      org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+      org.quartz.jobStore.isClustered: true
