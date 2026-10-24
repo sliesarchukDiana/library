@@ -1,0 +1,1 @@
+ALTER TABLE borrow_record ADD COLUMN reminder_sent_date TIMESTAMP;

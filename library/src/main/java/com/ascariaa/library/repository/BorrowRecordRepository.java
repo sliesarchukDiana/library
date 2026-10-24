@@ -20,4 +20,7 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     boolean existsByBookIdAndStatus(Long bookId, BorrowStatus status);
 
     void deleteByBookId(Long bookId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT b FROM BorrowRecord b WHERE b.status = :status AND b.borrowDate <= :thresholdDate AND b.reminderSentDate IS NULL")
+    List<BorrowRecord> findOverdueWithoutReminder(@org.springframework.data.repository.query.Param("status") BorrowStatus status, @org.springframework.data.repository.query.Param("thresholdDate") java.time.LocalDateTime thresholdDate);
 }

@@ -61,7 +61,7 @@ class QuartzIntegrationTest {
 
     @Test
     void executeJob_MissingParameter_ThrowsJobExecutionException() {
-        OverdueReminderJob job = new OverdueReminderJob(asyncLibraryService);
+        OverdueReminderJob job = new OverdueReminderJob(borrowRecordService);
         JobExecutionContext context = mock(JobExecutionContext.class);
         JobDataMap dataMap = new JobDataMap();
 
@@ -77,14 +77,14 @@ class QuartzIntegrationTest {
 
     @Test
     void executeJob_ServiceThrowsException_JobExecutionExceptionIsThrown() throws Exception {
-        OverdueReminderJob job = new OverdueReminderJob(asyncLibraryService);
+        OverdueReminderJob job = new OverdueReminderJob(borrowRecordService);
         JobExecutionContext context = mock(JobExecutionContext.class);
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("daysOverdue", 14);
         dataMap.put("messageType", "standard");
         when(context.getMergedJobDataMap()).thenReturn(dataMap);
 
-        doThrow(new RuntimeException("Database timeout")).when(asyncLibraryService)
+        doThrow(new RuntimeException("Database timeout")).when(borrowRecordService)
                 .processOverdueReminders(14, "standard");
 
         JobExecutionException exception = assertThrows(JobExecutionException.class, () -> {
@@ -100,9 +100,9 @@ class QuartzIntegrationTest {
         int daysOverdue = 14;
         String messageType = "standard";
 
-        asyncLibraryService.processOverdueReminders(daysOverdue, messageType);
-        asyncLibraryService.processOverdueReminders(daysOverdue, messageType);
+        borrowRecordService.processOverdueReminders(daysOverdue, messageType);
+        borrowRecordService.processOverdueReminders(daysOverdue, messageType);
 
-        verify(asyncLibraryService, times(2)).processOverdueReminders(daysOverdue, messageType);
+        verify(borrowRecordService, times(2)).processOverdueReminders(daysOverdue, messageType);
     }
 }

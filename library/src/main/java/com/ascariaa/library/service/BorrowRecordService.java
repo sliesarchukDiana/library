@@ -85,6 +85,18 @@ public class BorrowRecordService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void processOverdueReminders(int daysOverdue, String messageType) {
+        java.time.LocalDateTime thresholdDate = java.time.LocalDateTime.now().minusDays(daysOverdue);
+        List<BorrowRecord> overdueRecords = borrowRecordRepository.findOverdueWithoutReminder(BorrowStatus.ACTIVE, thresholdDate);
+        if (overdueRecords.isEmpty()) {return;}
+        for (BorrowRecord record : overdueRecords) {
+            asyncLibraryService.sendNotification(record.getId(), "user_" + record.getKeycloakUserId() + "@example.com");
+            record.setReminderSentDate(java.time.LocalDateTime.now());
+        }
+        borrowRecordRepository.saveAll(overdueRecords);
+    }
+
     @Transactional(readOnly = true)
     public void generateStatsReport(String reportName, boolean includeInactive) {
         log.info("Starting generation of report: {}", reportName);

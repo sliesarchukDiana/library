@@ -32,6 +32,9 @@ public class BorrowRecord {
     @Column(name = "return_date")
     private LocalDateTime returnDate;
 
+    @Column(name = "reminder_sent_date")
+    private LocalDateTime reminderSentDate;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BorrowStatus status;
