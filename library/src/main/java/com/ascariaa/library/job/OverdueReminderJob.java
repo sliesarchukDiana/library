@@ -15,23 +15,26 @@ import org.springframework.stereotype.Component;
 @DisallowConcurrentExecution
 @RequiredArgsConstructor
 public class OverdueReminderJob extends QuartzJobBean {
+
     private final AsyncLibraryService asyncLibraryService;
 
     @Override
-    protected void executeInternal(JobExecutionContext context) throws JobExecutionException{
+    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         JobDataMap dataMap = context.getMergedJobDataMap();
-        int daysOverdue = dataMap.getInt("daysOverdue");
-        String messageType = dataMap.getString("messageType");
-        if (!dataMap.containsKey("messageType")){
-            throw new JobExecutionException("Missing messageType parameter");
+
+        if (!dataMap.containsKey("messageType")) {
+            throw new JobExecutionException("Missing messageType parameter", false);
         }
 
-        try{
-            log.info("Overdue reminder: Days overdue threshold: {}, Message type: {}", daysOverdue, messageType);
-        } catch (Exception e){
+        int daysOverdue = dataMap.getInt("daysOverdue");
+        String messageType = dataMap.getString("messageType");
+
+        try {
+            log.info("Processing overdue reminders: Days overdue threshold: {}, Message type: {}", daysOverdue, messageType);
+            asyncLibraryService.processOverdueReminders(daysOverdue, messageType);
+        } catch (Exception e) {
             log.error("Failed to execute overdue reminder", e);
             throw new JobExecutionException(e, false);
         }
     }
-
 }

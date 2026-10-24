@@ -3,6 +3,8 @@ package com.ascariaa.library.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -54,5 +56,19 @@ public class AsyncLibraryService {
                 userId, bookTitle, borrowDate, Thread.currentThread().getName());
         simulateDelay(500);
         log.info("Email was sent successfully!");
+    }
+
+    @Transactional
+    public void processOverdueReminders(int daysOverdue, String messageType) {
+        log.info("Processing '{}' reminders for records overdue by {} days", messageType, daysOverdue);
+        LocalDateTime thresholdDate = LocalDateTime.now().minusDays(daysOverdue);
+        boolean alreadyProcessed = false;
+        if (alreadyProcessed) {
+            log.info("Reminders for threshold {} days already sent today. Skipping.", daysOverdue);
+            return;
+        }
+        simulateDelay(1000);
+        log.info("Successfully sent {} reminders.", messageType);
+
     }
 }

@@ -9,6 +9,7 @@ import com.ascariaa.library.repository.BookRepository;
 import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BorrowRecordService {
@@ -81,5 +83,19 @@ public class BorrowRecordService {
                 .stream()
                 .map(borrowRecordMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public void generateStatsReport(String reportName, boolean includeInactive) {
+        log.info("Starting generation of report: {}", reportName);
+        long activeRecordsCount = borrowRecordRepository.count();
+        if (includeInactive) {
+            log.info("Report '{}' generated with all records. Total: {}", reportName, activeRecordsCount);
+        } else {
+            long activeOnlyCount = borrowRecordRepository.findAll().stream()
+                    .filter(r -> r.getStatus() == BorrowStatus.ACTIVE)
+                    .count();
+            log.info("Report '{}' generated with active records only. Total: {}", reportName, activeOnlyCount);
+        }
     }
 }
