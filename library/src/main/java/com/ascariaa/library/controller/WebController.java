@@ -73,13 +73,24 @@ public class WebController {
         }
 
         bookService.createBook(bookCreateDto);
-        return "redirect:/"; // Успішне збереження
+        return "redirect:/";
     }
 
     @PostMapping("/ui/books/delete/{id}")
     public String deleteBook(@PathVariable Long id, Model model, @AuthenticationPrincipal OidcUser oidcUser) {
         try {
             bookService.deleteBook(id);
+            return "redirect:/";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return index(model, oidcUser);
+        }
+    }
+
+    @PostMapping("/ui/reports/generate")
+    public String generateReport(Model model, @AuthenticationPrincipal OidcUser oidcUser) {
+        try {
+            borrowRecordService.generateStatsReport("Manual Admin Stats", true);
             return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());

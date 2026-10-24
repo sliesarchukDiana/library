@@ -29,9 +29,12 @@
 
 <div th:if="${error}" class="error" th:text="${error}"></div>
 
-<!-- Секция управления для администратора -->
 <div sec:authorize="hasRole('ADMIN')" style="margin-bottom: 20px;">
     <a th:href="@{/ui/books/new}" class="btn btn-success" style="text-decoration: none;">+ Add New Book</a>
+
+    <form th:action="@{/ui/reports/generate}" method="post" style="display:inline; margin-left: 20px;">
+        <button type="submit" class="btn" style="background-color: #007bff; color: white; border: none; padding: 6px 8px">Generate Report</button>
+    </form>
 </div>
 
 <h2>All Books</h2>
