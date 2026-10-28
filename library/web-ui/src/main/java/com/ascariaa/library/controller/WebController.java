@@ -26,8 +26,8 @@ import java.util.List;
 public class WebController {
 
     private final RestClient restClient;
-    private final String BOOK_SERVICE_URL = "http://localhost:8081/api/books";
-    private final String BORROW_SERVICE_URL = "http://localhost:8082/api/borrow";
+    private final String BOOK_SERVICE_URL = "http://book-service:8081/api/books";
+    private final String BORROW_SERVICE_URL = "http://borrow-service:8082/api/borrow";
 
     public WebController() {
         this.restClient = RestClient.create();

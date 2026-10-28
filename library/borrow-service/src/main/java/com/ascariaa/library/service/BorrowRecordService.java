@@ -29,7 +29,7 @@ public class BorrowRecordService {
     private final AsyncLibraryService asyncLibraryService;
     private final RestClient restClient;
 
-    private final String BOOK_SERVICE_URL = "http://localhost:8081/api/books";
+    private final String BOOK_SERVICE_URL = "http://book-service:8081/api/books";
 
     public BorrowRecordService(BorrowRecordRepository borrowRecordRepository,
                                BorrowRecordMapper borrowRecordMapper,

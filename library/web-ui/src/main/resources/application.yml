@@ -15,4 +15,4 @@ spring:
             authorization-grant-type: authorization_code
         provider:
           keycloak:
-            issuer-uri: http://localhost:8080/realms/library-realm
+            issuer-uri: http://keycloak:8080/realms/library-realm
