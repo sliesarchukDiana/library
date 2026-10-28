@@ -23,10 +23,15 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BorrowRecordServiceTest {
+
     @Mock private BorrowRecordRepository borrowRecordRepository;
+
     @Mock private BorrowRecordMapper borrowRecordMapper;
+
     @Mock private AsyncLibraryService asyncLibraryService;
+
     @Mock(answer = Answers.RETURNS_DEEP_STUBS) private RestClient restClient;
+
     @InjectMocks private BorrowRecordService borrowRecordService;
 
     @BeforeEach
@@ -36,20 +41,64 @@ class BorrowRecordServiceTest {
 
     @Test
     void borrowBook_limitExceeded_throwsIllegalStateException() {
+
         when(borrowRecordRepository.countByKeycloakUserIdAndStatus(any(), any())).thenReturn(3L);
+
         assertThrows(IllegalStateException.class, () -> borrowRecordService.borrowBook(1L, UUID.randomUUID()));
     }
 
     @Test
     void returnBook_recordNotFound_throwsException() {
+
         when(borrowRecordRepository.findByIdAndKeycloakUserId(anyLong(), any())).thenReturn(Optional.empty());
+
         assertThrows(Exception.class, () -> borrowRecordService.returnBook(1L, UUID.randomUUID()));
     }
 
     @Test
     void returnBook_alreadyReturned_throwsException() {
+
         BorrowRecord record = BorrowRecord.builder().status(BorrowStatus.RETURNED).build();
+
         when(borrowRecordRepository.findByIdAndKeycloakUserId(anyLong(), any())).thenReturn(Optional.of(record));
+
         assertThrows(IllegalStateException.class, () -> borrowRecordService.returnBook(1L, UUID.randomUUID()));
+    }
+
+    @Test
+    void getActiveRecordsByUser_returnsList() {
+
+        UUID userId = UUID.randomUUID();
+        BorrowRecord record = BorrowRecord.builder().id(1L).status(BorrowStatus.ACTIVE).build();
+
+        when(borrowRecordRepository.findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE))
+                .thenReturn(java.util.List.of(record));
+        when(borrowRecordMapper.toDto(record)).thenReturn(new com.ascariaa.library.domain.dto.BorrowRecordDto());
+
+        java.util.List<com.ascariaa.library.domain.dto.BorrowRecordDto> result = borrowRecordService.getActiveRecordsByUser(userId);
+
+        assertFalse(result.isEmpty());
+        verify(borrowRecordRepository).findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE);
+    }
+
+    @Test
+    void generateStatsReport_executesWithoutErrors() {
+
+        when(borrowRecordRepository.count()).thenReturn(10L);
+
+        assertDoesNotThrow(() -> borrowRecordService.generateStatsReport("TestReport", true));
+        assertDoesNotThrow(() -> borrowRecordService.generateStatsReport("TestReport", false));
+    }
+
+    @Test
+    void processOverdueReminders_sendsNotifications() {
+        BorrowRecord record = BorrowRecord.builder().id(1L).keycloakUserId(UUID.randomUUID()).build();
+        when(borrowRecordRepository.findOverdueWithoutReminder(any(), any()))
+                .thenReturn(java.util.List.of(record));
+
+        borrowRecordService.processOverdueReminders(14, "standard");
+
+        verify(asyncLibraryService).sendNotification(eq(1L), anyString());
+        verify(borrowRecordRepository).saveAll(any());
     }
 }

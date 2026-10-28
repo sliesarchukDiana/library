@@ -35,4 +35,18 @@ class BorrowRecordControllerTest {
         borrowRecordController.getActiveRecords(userId);
         verify(borrowRecordService).getActiveRecordsByUser(userId);
     }
+
+    @Test
+    void returnBook_callsService() {
+        UUID userId = UUID.randomUUID();
+        when(jwt.getSubject()).thenReturn(userId.toString());
+        borrowRecordController.returnBook(1L, jwt);
+        verify(borrowRecordService).returnBook(1L, userId);
+    }
+
+    @Test
+    void generateReport_callsService() {
+        borrowRecordController.generateReport();
+        verify(borrowRecordService).generateStatsReport("Manual Admin Stats", true);
+    }
 }

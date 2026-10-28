@@ -48,4 +48,35 @@ class BookControllerTest {
         bookController.incrementCopies(1L);
         verify(bookService).incrementCopies(1L);
     }
+
+    @Test
+    void createBook_callsService() {
+        com.ascariaa.library.domain.dto.BookCreateDto dto = new com.ascariaa.library.domain.dto.BookCreateDto();
+        BookDto expected = new BookDto();
+        when(bookService.createBook(dto)).thenReturn(expected);
+
+        BookDto actual = bookController.createBook(dto);
+
+        assertEquals(expected, actual);
+        verify(bookService).createBook(dto);
+    }
+
+    @Test
+    void updateBook_callsService() {
+        Long id = 1L;
+        com.ascariaa.library.domain.dto.BookCreateDto dto = new com.ascariaa.library.domain.dto.BookCreateDto();
+        BookDto expected = new BookDto();
+        when(bookService.updateBook(id, dto)).thenReturn(expected);
+
+        BookDto actual = bookController.updateBook(id, dto);
+
+        assertEquals(expected, actual);
+        verify(bookService).updateBook(id, dto);
+    }
+
+    @Test
+    void deleteBook_callsService() {
+        bookController.deleteBook(1L);
+        verify(bookService).deleteBook(1L);
+    }
 }

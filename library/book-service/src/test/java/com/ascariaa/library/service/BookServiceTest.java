@@ -106,4 +106,36 @@ class BookServiceTest {
         assertEquals(2, book.getAvailableCopies());
         verify(bookRepository).save(book);
     }
+
+    @Test
+    void updateBook_validInput_returnsDto() {
+        Long id = 1L;
+        com.ascariaa.library.domain.dto.BookCreateDto dto = new com.ascariaa.library.domain.dto.BookCreateDto();
+        com.ascariaa.library.domain.entity.Book book = com.ascariaa.library.domain.entity.Book.builder().id(id).build();
+        com.ascariaa.library.domain.dto.BookDto expectedDto = new com.ascariaa.library.domain.dto.BookDto();
+
+        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+        when(bookRepository.save(book)).thenReturn(book);
+        when(bookMapper.toDto(book)).thenReturn(expectedDto);
+
+        com.ascariaa.library.domain.dto.BookDto result = bookService.updateBook(id, dto);
+
+        assertEquals(expectedDto, result);
+        verify(bookMapper).updateEntity(book, dto);
+        verify(bookRepository).save(book);
+    }
+
+    @Test
+    void getBookByIdSelfInvocationDemo_returnsDto() {
+        Long id = 1L;
+        com.ascariaa.library.domain.entity.Book book = com.ascariaa.library.domain.entity.Book.builder().id(id).build();
+        com.ascariaa.library.domain.dto.BookDto dto = new com.ascariaa.library.domain.dto.BookDto();
+
+        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+        when(bookMapper.toDto(book)).thenReturn(dto);
+
+        com.ascariaa.library.domain.dto.BookDto result = bookService.getBookByIdSelfInvocationDemo(id);
+
+        assertNotNull(result);
+    }
 }
