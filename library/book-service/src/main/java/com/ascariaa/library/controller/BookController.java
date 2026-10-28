@@ -1,0 +1,62 @@
+package com.ascariaa.library.controller;
+
+import com.ascariaa.library.domain.annotation.PostCreated;
+import com.ascariaa.library.domain.dto.BookCreateDto;
+import com.ascariaa.library.domain.dto.BookDto;
+import com.ascariaa.library.service.BookService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/books")
+@RequiredArgsConstructor
+public class BookController {
+
+    private final BookService bookService;
+
+    @GetMapping
+    public List<BookDto> getAllBooks() {
+        return bookService.getAllBooks();
+    }
+
+    @GetMapping("/{id}")
+    public BookDto getBookById(@PathVariable Long id) {
+        return bookService.getBookById(id);
+    }
+
+    @PostCreated
+    @PreAuthorize("hasRole('ADMIN')")
+    public BookDto createBook(@Valid @RequestBody BookCreateDto dto) {
+        return bookService.createBook(dto);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public BookDto updateBook(@PathVariable Long id, @Valid @RequestBody BookCreateDto dto) {
+        return bookService.updateBook(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
+    }
+
+    @PatchMapping("/{id}/decrement")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void decrementCopies(@PathVariable Long id) {
+        bookService.decrementCopies(id);
+    }
+
+    @PatchMapping("/{id}/increment")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void incrementCopies(@PathVariable Long id) {
+        bookService.incrementCopies(id);
+    }
+}

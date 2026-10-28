@@ -1,0 +1,18 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: web-ui
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: library-client
+            client-secret: qyqux3p2Jehjr7QpiB1SDN82McXKSF6a
+            scope: [openid, profile]
+            authorization-grant-type: authorization_code
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/library-realm
