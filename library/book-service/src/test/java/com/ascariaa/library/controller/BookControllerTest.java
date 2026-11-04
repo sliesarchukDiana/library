@@ -38,18 +38,6 @@ class BookControllerTest {
     }
 
     @Test
-    void decrementCopies_callsService() {
-        bookController.decrementCopies(1L);
-        verify(bookService).decrementCopies(1L);
-    }
-
-    @Test
-    void incrementCopies_callsService() {
-        bookController.incrementCopies(1L);
-        verify(bookService).incrementCopies(1L);
-    }
-
-    @Test
     void createBook_callsService() {
         com.ascariaa.library.domain.dto.BookCreateDto dto = new com.ascariaa.library.domain.dto.BookCreateDto();
         BookDto expected = new BookDto();

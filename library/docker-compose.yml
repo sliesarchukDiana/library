@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:16
@@ -26,34 +25,60 @@ services:
     depends_on:
       - postgres
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
   book-service:
     build:
       context: ./book-service
+    environment:
+      KAFKA_URL: kafka:29092
     ports:
       - "8081:8081"
     depends_on:
       - postgres
       - keycloak
+      - kafka
     restart: on-failure
 
   borrow-service:
-      build:
-        context: ./borrow-service
-      ports:
-        - "8082:8082"
-      depends_on:
-        - postgres
-        - keycloak
-        - book-service
-      restart: on-failure
+    build:
+      context: ./borrow-service
+    environment:
+      KAFKA_URL: kafka:29092
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - keycloak
+      - kafka
+    restart: on-failure
 
   web-ui:
-      build:
-        context: ./web-ui
-      ports:
-        - "8083:8083"
-      depends_on:
-        - keycloak
-        - book-service
-        - borrow-service
-      restart: on-failure
+    build:
+      context: ./web-ui
+    ports:
+      - "8083:8083"
+    depends_on:
+      - keycloak
+      - book-service
+      - borrow-service
+    restart: on-failure

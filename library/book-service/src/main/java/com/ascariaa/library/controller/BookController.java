@@ -48,15 +48,4 @@ public class BookController {
         bookService.deleteBook(id);
     }
 
-    @PatchMapping("/{id}/decrement")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void decrementCopies(@PathVariable Long id) {
-        bookService.decrementCopies(id);
-    }
-
-    @PatchMapping("/{id}/increment")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void incrementCopies(@PathVariable Long id) {
-        bookService.incrementCopies(id);
-    }
 }

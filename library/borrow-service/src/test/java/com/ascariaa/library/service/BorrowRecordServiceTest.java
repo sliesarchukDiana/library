@@ -11,6 +11,7 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
@@ -31,6 +32,8 @@ class BorrowRecordServiceTest {
     @Mock private AsyncLibraryService asyncLibraryService;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS) private RestClient restClient;
+
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks private BorrowRecordService borrowRecordService;
 

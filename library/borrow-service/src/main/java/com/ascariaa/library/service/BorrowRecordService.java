@@ -4,10 +4,13 @@ import com.ascariaa.library.domain.dto.BookDto;
 import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.domain.entity.BorrowRecord;
 import com.ascariaa.library.domain.enums.BorrowStatus;
+import com.ascariaa.library.domain.event.BookBorrowedEvent;
+import com.ascariaa.library.domain.event.BookReturnedEvent;
 import com.ascariaa.library.domain.mapper.BorrowRecordMapper;
 import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -23,20 +26,20 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class BorrowRecordService {
-
     private final BorrowRecordRepository borrowRecordRepository;
     private final BorrowRecordMapper borrowRecordMapper;
     private final AsyncLibraryService asyncLibraryService;
+    private final ApplicationEventPublisher eventPublisher;
     private final RestClient restClient;
-
-    private final String BOOK_SERVICE_URL = "http://book-service:8081/api/books";
 
     public BorrowRecordService(BorrowRecordRepository borrowRecordRepository,
                                BorrowRecordMapper borrowRecordMapper,
-                               AsyncLibraryService asyncLibraryService) {
+                               AsyncLibraryService asyncLibraryService,
+                               ApplicationEventPublisher eventPublisher) {
         this.borrowRecordRepository = borrowRecordRepository;
         this.borrowRecordMapper = borrowRecordMapper;
         this.asyncLibraryService = asyncLibraryService;
+        this.eventPublisher = eventPublisher;
         this.restClient = RestClient.create();
     }
 
@@ -55,6 +58,7 @@ public class BorrowRecordService {
             throw new IllegalStateException("Limit of 3 active books exceeded");
         }
 
+        String BOOK_SERVICE_URL = "http://book-service:8081/api/books";
         BookDto book = restClient.get()
                 .uri(BOOK_SERVICE_URL + "/" + bookId)
                 .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
@@ -68,12 +72,6 @@ public class BorrowRecordService {
             throw new IllegalStateException("No available copies for this book");
         }
 
-        restClient.patch()
-                .uri(BOOK_SERVICE_URL + "/" + bookId + "/decrement")
-                .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
-                .retrieve()
-                .toBodilessEntity();
-
         BorrowRecord record = BorrowRecord.builder()
                 .bookId(bookId)
                 .keycloakUserId(userId)
@@ -82,7 +80,10 @@ public class BorrowRecordService {
                 .build();
 
         BorrowRecord savedRecord = borrowRecordRepository.save(record);
+
         asyncLibraryService.sendBookBorrowedNotification(userId, book.getTitle(), savedRecord.getBorrowDate());
+
+        eventPublisher.publishEvent(new BookBorrowedEvent(UUID.randomUUID(), bookId, LocalDateTime.now()));
 
         return borrowRecordMapper.toDto(savedRecord);
     }
@@ -98,14 +99,11 @@ public class BorrowRecordService {
 
         record.setStatus(BorrowStatus.RETURNED);
         record.setReturnDate(LocalDateTime.now());
+        BorrowRecord savedRecord = borrowRecordRepository.save(record);
 
-        restClient.patch()
-                .uri(BOOK_SERVICE_URL + "/" + record.getBookId() + "/increment")
-                .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
-                .retrieve()
-                .toBodilessEntity();
+        eventPublisher.publishEvent(new BookReturnedEvent(UUID.randomUUID(), record.getBookId(), LocalDateTime.now()));
 
-        return borrowRecordMapper.toDto(borrowRecordRepository.save(record));
+        return borrowRecordMapper.toDto(savedRecord);
     }
 
     @Transactional(readOnly = true)

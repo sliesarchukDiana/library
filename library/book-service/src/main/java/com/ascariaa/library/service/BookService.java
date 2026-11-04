@@ -12,6 +12,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
+import com.ascariaa.library.domain.event.BookDeletedEvent;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +26,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<BookDto> getAllBooks() {
@@ -61,6 +66,8 @@ public class BookService {
             throw new EntityNotFoundException("Book not found");
         }
         bookRepository.deleteById(id);
+
+        eventPublisher.publishEvent(new BookDeletedEvent(UUID.randomUUID(), id, LocalDateTime.now()));
     }
 
     protected Book findBookEntity(Long id) {
