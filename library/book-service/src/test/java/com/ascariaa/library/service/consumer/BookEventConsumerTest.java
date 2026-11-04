@@ -1,6 +1,6 @@
 package com.ascariaa.library.service.consumer;
 
-import com.ascariaa.library.domain.event.BookBorrowedEvent;
+import com.ascariaa.library.domain.event.BookReturnedEvent;
 import com.ascariaa.library.repository.ProcessedEventRepository;
 import com.ascariaa.library.service.BookService;
 import org.junit.jupiter.api.Test;
@@ -12,36 +12,35 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BookEventConsumerTest {
 
-    @Mock
-    private BookService bookService;
+    @Mock private BookService bookService;
+    @Mock private ProcessedEventRepository processedEventRepository;
 
-    @Mock
-    private ProcessedEventRepository processedEventRepository;
-
-    @InjectMocks
-    private BookEventConsumer consumer;
+    @InjectMocks private BookEventConsumer consumer;
 
     @Test
-    void consumeBookBorrowed_twice_processesOnlyOnce() {
-        UUID eventId = UUID.randomUUID();
-        Long bookId = 100L;
-        BookBorrowedEvent event = new BookBorrowedEvent(eventId, bookId, LocalDateTime.now());
+    void consumeBookReturned_alreadyProcessed_skips() {
+        BookReturnedEvent event = new BookReturnedEvent(UUID.randomUUID(), 1L, LocalDateTime.now());
+        when(processedEventRepository.existsById(event.getEventId())).thenReturn(true);
 
-        when(processedEventRepository.existsById(eventId)).thenReturn(false);
-        consumer.consumeBookBorrowed(event);
+        consumer.consumeBookReturned(event);
 
-        verify(bookService, times(1)).decrementCopies(bookId);
-        verify(processedEventRepository, times(1)).save(any());
+        verify(bookService, never()).incrementCopies(any());
+    }
 
-        when(processedEventRepository.existsById(eventId)).thenReturn(true);
-        consumer.consumeBookBorrowed(event);
+    @Test
+    void consumeBookReturned_notProcessed_incrementsAndSaves() {
+        BookReturnedEvent event = new BookReturnedEvent(UUID.randomUUID(), 1L, LocalDateTime.now());
+        when(processedEventRepository.existsById(event.getEventId())).thenReturn(false);
 
-        verify(bookService, times(1)).decrementCopies(bookId);
-        verify(processedEventRepository, times(1)).save(any());
+        consumer.consumeBookReturned(event);
+
+        verify(bookService).incrementCopies(1L);
+        verify(processedEventRepository).save(any());
     }
 }

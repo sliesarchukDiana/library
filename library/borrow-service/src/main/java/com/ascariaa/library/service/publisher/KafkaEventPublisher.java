@@ -1,7 +1,7 @@
 package com.ascariaa.library.service.publisher;
 
-import com.ascariaa.library.domain.event.BookBorrowedEvent;
 import com.ascariaa.library.domain.event.BookReturnedEvent;
+import com.ascariaa.library.domain.event.BorrowRequestedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,9 +17,8 @@ public class KafkaEventPublisher {
     private final KafkaTemplate<Object, Object> kafkaTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleBookBorrowed(BookBorrowedEvent event) {
-        log.info("Transaction committed. Sending BookBorrowedEvent to Kafka: {}", event.getEventId());
-        kafkaTemplate.send("book-borrowed-topic", event.getBookId().toString(), event);
+    public void handleBorrowRequested(BorrowRequestedEvent event) {
+        kafkaTemplate.send("borrow-requested-topic", event.getRecordId().toString(), event);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

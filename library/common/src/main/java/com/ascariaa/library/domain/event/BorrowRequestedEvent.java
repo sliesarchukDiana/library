@@ -1,17 +1,13 @@
 package com.ascariaa.library.domain.event;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class BookBorrowedEvent {
+@Data @NoArgsConstructor @AllArgsConstructor
+public class BorrowRequestedEvent {
     private UUID eventId = UUID.randomUUID();
+    private Long recordId;
     private Long bookId;
+    private UUID userId;
     private LocalDateTime timestamp;
 }
-

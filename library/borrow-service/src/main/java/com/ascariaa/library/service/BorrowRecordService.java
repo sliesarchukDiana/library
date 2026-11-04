@@ -4,8 +4,8 @@ import com.ascariaa.library.domain.dto.BookDto;
 import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.domain.entity.BorrowRecord;
 import com.ascariaa.library.domain.enums.BorrowStatus;
-import com.ascariaa.library.domain.event.BookBorrowedEvent;
 import com.ascariaa.library.domain.event.BookReturnedEvent;
+import com.ascariaa.library.domain.event.BorrowRequestedEvent;
 import com.ascariaa.library.domain.mapper.BorrowRecordMapper;
 import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -53,37 +53,22 @@ public class BorrowRecordService {
 
     @Transactional
     public BorrowRecordDto borrowBook(Long bookId, UUID userId) {
-        long activeRecords = borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE);
-        if (activeRecords >= 3) {
-            throw new IllegalStateException("Limit of 3 active books exceeded");
-        }
-
-        String BOOK_SERVICE_URL = "http://book-service:8081/api/books";
-        BookDto book = restClient.get()
-                .uri(BOOK_SERVICE_URL + "/" + bookId)
-                .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
-                .retrieve()
-                .body(BookDto.class);
-
-        if (book == null) {
-            throw new EntityNotFoundException("Book not found");
-        }
-        if (book.getAvailableCopies() <= 0) {
-            throw new IllegalStateException("No available copies for this book");
+        long activeAndPending = borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE) +
+                borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.PENDING);
+        if (activeAndPending >= 3) {
+            throw new IllegalStateException("Limit of 3 active/pending books exceeded");
         }
 
         BorrowRecord record = BorrowRecord.builder()
                 .bookId(bookId)
                 .keycloakUserId(userId)
                 .borrowDate(LocalDateTime.now())
-                .status(BorrowStatus.ACTIVE)
+                .status(BorrowStatus.PENDING)
                 .build();
 
         BorrowRecord savedRecord = borrowRecordRepository.save(record);
 
-        asyncLibraryService.sendBookBorrowedNotification(userId, book.getTitle(), savedRecord.getBorrowDate());
-
-        eventPublisher.publishEvent(new BookBorrowedEvent(UUID.randomUUID(), bookId, LocalDateTime.now()));
+        eventPublisher.publishEvent(new BorrowRequestedEvent(UUID.randomUUID(), savedRecord.getId(), bookId, userId, LocalDateTime.now()));
 
         return borrowRecordMapper.toDto(savedRecord);
     }
