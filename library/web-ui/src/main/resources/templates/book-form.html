@@ -29,7 +29,7 @@
             background-image: repeating-linear-gradient(transparent, transparent 31px, #d7ccc8 31px, #d7ccc8 32px);
             background-position: 0 40px;
         }
-        /* Червона лінія зліва, типова для індексних карток */
+
         .index-card::before {
             content: '';
             position: absolute;
@@ -43,7 +43,7 @@
         .form-label {
             font-family: 'Playfair Display', serif;
             font-size: 1.1rem;
-            background-color: #fdfbf7; /* Перекриваємо лінії фону */
+            background-color: #fdfbf7;
             padding-right: 10px;
             font-style: italic;
         }
@@ -85,7 +85,6 @@
     <div class="w-100" style="max-width: 550px;">
         <h2 class="text-center mb-4">Archive a New Tome</h2>
 
-        <!-- Бібліотечна індексна картка -->
         <div class="index-card pl-5">
             <form th:action="@{/books}" th:object="${book}" method="post" style="position: relative; z-index: 2; padding-left: 30px;">
 

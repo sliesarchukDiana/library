@@ -42,15 +42,16 @@ public class WebController {
                         @AuthenticationPrincipal OidcUser oidcUser,
                         @RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient authClient) {
         String token = getBearerToken(authClient);
+        List<BorrowRecordDto> myBooks = null;
+
         if (oidcUser != null) {
             model.addAttribute("username", oidcUser.getPreferredUsername());
             try {
-                List<BorrowRecordDto> myBooks = restClient.get()
+                myBooks = restClient.get()
                         .uri(BORROW_SERVICE_URL + "/active")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .retrieve()
                         .body(new ParameterizedTypeReference<List<BorrowRecordDto>>() {});
-                model.addAttribute("myBooks", myBooks);
             } catch (Exception e) {
                 model.addAttribute("error", extractErrorMessage(e));
             }
@@ -59,6 +60,16 @@ public class WebController {
         try {
             List<BookDto> books = bookCatalogPort.getAllBooks(token);
             model.addAttribute("books", books);
+
+            if (myBooks != null) {
+                myBooks.forEach(record -> {
+                    books.stream()
+                            .filter(b -> b.getId().equals(record.getBookId()))
+                            .findFirst()
+                            .ifPresent(b -> record.setBookTitle(b.getTitle()));
+                });
+                model.addAttribute("myBooks", myBooks);
+            }
         } catch (Exception e) {
             model.addAttribute("error", extractErrorMessage(e));
         }

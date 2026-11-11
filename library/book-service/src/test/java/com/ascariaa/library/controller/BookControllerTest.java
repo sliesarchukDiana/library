@@ -67,4 +67,16 @@ class BookControllerTest {
         bookController.deleteBook(1L);
         verify(bookService).deleteBook(1L);
     }
+
+    @Test
+    void decrementCopies_callsService() {
+        bookController.decrementCopies(1L);
+        verify(bookService).decrementCopies(1L);
+    }
+
+    @Test
+    void incrementCopies_callsService() {
+        bookController.incrementCopies(1L);
+        verify(bookService).incrementCopies(1L);
+    }
 }

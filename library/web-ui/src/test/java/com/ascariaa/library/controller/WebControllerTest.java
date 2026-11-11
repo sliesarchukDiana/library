@@ -91,11 +91,15 @@ class WebControllerTest {
         when(accessToken.getTokenValue()).thenReturn("token");
         when(oidcUser.getPreferredUsername()).thenReturn("testuser");
 
+        String jsonResponse = "[{\"id\":1, \"bookId\":10, \"status\":\"ACTIVE\"}]";
         mockServer.expect(requestTo("http://borrow-service:8082/api/borrow/active"))
                 .andExpect(method(HttpMethod.GET))
-                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+                .andRespond(withSuccess(jsonResponse, MediaType.APPLICATION_JSON));
 
-        when(bookCatalogPort.getAllBooks("Bearer token")).thenReturn(List.of());
+        com.ascariaa.library.domain.dto.BookDto mockBook = new com.ascariaa.library.domain.dto.BookDto();
+        mockBook.setId(10L);
+        mockBook.setTitle("The Great Gatsby");
+        when(bookCatalogPort.getAllBooks("Bearer token")).thenReturn(List.of(mockBook));
 
         String view = webController.index(model, oidcUser, authClient);
 

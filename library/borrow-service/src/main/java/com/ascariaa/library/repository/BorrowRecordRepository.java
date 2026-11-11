@@ -23,4 +23,6 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
 
     @org.springframework.data.jpa.repository.Query("SELECT b FROM BorrowRecord b WHERE b.status = :status AND b.borrowDate <= :thresholdDate AND b.reminderSentDate IS NULL")
     List<BorrowRecord> findOverdueWithoutReminder(@org.springframework.data.repository.query.Param("status") BorrowStatus status, @org.springframework.data.repository.query.Param("thresholdDate") java.time.LocalDateTime thresholdDate);
+
+    List<BorrowRecord> findByKeycloakUserIdAndStatusIn(UUID keycloakUserId, List<BorrowStatus> statuses);
 }

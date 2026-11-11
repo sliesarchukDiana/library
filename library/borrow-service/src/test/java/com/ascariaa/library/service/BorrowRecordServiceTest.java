@@ -70,18 +70,17 @@ class BorrowRecordServiceTest {
 
     @Test
     void getActiveRecordsByUser_returnsList() {
-
         UUID userId = UUID.randomUUID();
         BorrowRecord record = BorrowRecord.builder().id(1L).status(BorrowStatus.ACTIVE).build();
 
-        when(borrowRecordRepository.findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE))
+        when(borrowRecordRepository.findByKeycloakUserIdAndStatusIn(eq(userId), anyList()))
                 .thenReturn(java.util.List.of(record));
         when(borrowRecordMapper.toDto(record)).thenReturn(new com.ascariaa.library.domain.dto.BorrowRecordDto());
 
         java.util.List<com.ascariaa.library.domain.dto.BorrowRecordDto> result = borrowRecordService.getActiveRecordsByUser(userId);
 
         assertFalse(result.isEmpty());
-        verify(borrowRecordRepository).findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE);
+        verify(borrowRecordRepository).findByKeycloakUserIdAndStatusIn(eq(userId), anyList());
     }
 
     @Test

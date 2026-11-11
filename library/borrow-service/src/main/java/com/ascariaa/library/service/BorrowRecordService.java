@@ -53,22 +53,29 @@ public class BorrowRecordService {
 
     @Transactional
     public BorrowRecordDto borrowBook(Long bookId, UUID userId) {
-        long activeAndPending = borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE) +
-                borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.PENDING);
-        if (activeAndPending >= 3) {
-            throw new IllegalStateException("Limit of 3 active/pending books exceeded");
+        long activeCount = borrowRecordRepository.countByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE);
+        if (activeCount >= 3) {
+            throw new IllegalStateException("Limit of 3 active books exceeded");
+        }
+        try {
+            restClient.patch()
+                    .uri("http://book-service:8081/api/books/" + bookId + "/decrement")
+                    .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            throw new IllegalStateException("Book is not available or service error");
         }
 
         BorrowRecord record = BorrowRecord.builder()
                 .bookId(bookId)
                 .keycloakUserId(userId)
                 .borrowDate(LocalDateTime.now())
-                .status(BorrowStatus.PENDING)
+                .status(BorrowStatus.ACTIVE)
                 .build();
-
         BorrowRecord savedRecord = borrowRecordRepository.save(record);
 
-        eventPublisher.publishEvent(new BorrowRequestedEvent(UUID.randomUUID(), savedRecord.getId(), bookId, userId, LocalDateTime.now()));
+        asyncLibraryService.sendBookBorrowedNotification(userId, "Book ID: " + bookId, record.getBorrowDate());
 
         return borrowRecordMapper.toDto(savedRecord);
     }
@@ -82,18 +89,27 @@ public class BorrowRecordService {
             throw new IllegalStateException("Book is already returned");
         }
 
+        try {
+            restClient.patch()
+                    .uri("http://book-service:8081/api/books/" + record.getBookId() + "/increment")
+                    .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not return book to catalog");
+        }
+
         record.setStatus(BorrowStatus.RETURNED);
         record.setReturnDate(LocalDateTime.now());
         BorrowRecord savedRecord = borrowRecordRepository.save(record);
-
-        eventPublisher.publishEvent(new BookReturnedEvent(UUID.randomUUID(), record.getBookId(), LocalDateTime.now()));
 
         return borrowRecordMapper.toDto(savedRecord);
     }
 
     @Transactional(readOnly = true)
     public List<BorrowRecordDto> getActiveRecordsByUser(UUID userId) {
-        return borrowRecordRepository.findByKeycloakUserIdAndStatus(userId, BorrowStatus.ACTIVE)
+        return borrowRecordRepository.findByKeycloakUserIdAndStatusIn(
+                        userId, List.of(BorrowStatus.ACTIVE, BorrowStatus.PENDING))
                 .stream()
                 .map(borrowRecordMapper::toDto)
                 .collect(Collectors.toList());
