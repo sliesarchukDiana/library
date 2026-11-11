@@ -1,8 +1,6 @@
 package com.ascariaa.library.service.publisher;
 
 import com.ascariaa.library.domain.event.BookDeletedEvent;
-import com.ascariaa.library.domain.event.BorrowConfirmedEvent;
-import com.ascariaa.library.domain.event.BorrowRejectedEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,17 +26,4 @@ class KafkaEventPublisherTest {
         verify(kafkaTemplate).send("book-deleted-topic", "1", event);
     }
 
-    @Test
-    void handleBorrowConfirmed_sendsToKafka() {
-        BorrowConfirmedEvent event = new BorrowConfirmedEvent(UUID.randomUUID(), 1L, "Title", UUID.randomUUID(), LocalDateTime.now());
-        publisher.handleBorrowConfirmed(event);
-        verify(kafkaTemplate).send("borrow-confirmed-topic", "1", event);
-    }
-
-    @Test
-    void handleBorrowRejected_sendsToKafka() {
-        BorrowRejectedEvent event = new BorrowRejectedEvent(UUID.randomUUID(), 1L, "Reason", LocalDateTime.now());
-        publisher.handleBorrowRejected(event);
-        verify(kafkaTemplate).send("borrow-rejected-topic", "1", event);
-    }
 }

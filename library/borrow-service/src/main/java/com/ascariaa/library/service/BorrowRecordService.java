@@ -1,11 +1,8 @@
 package com.ascariaa.library.service;
 
-import com.ascariaa.library.domain.dto.BookDto;
 import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.domain.entity.BorrowRecord;
 import com.ascariaa.library.domain.enums.BorrowStatus;
-import com.ascariaa.library.domain.event.BookReturnedEvent;
-import com.ascariaa.library.domain.event.BorrowRequestedEvent;
 import com.ascariaa.library.domain.mapper.BorrowRecordMapper;
 import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,7 +26,6 @@ public class BorrowRecordService {
     private final BorrowRecordRepository borrowRecordRepository;
     private final BorrowRecordMapper borrowRecordMapper;
     private final AsyncLibraryService asyncLibraryService;
-    private final ApplicationEventPublisher eventPublisher;
     private final RestClient restClient;
 
     public BorrowRecordService(BorrowRecordRepository borrowRecordRepository,
@@ -39,7 +35,6 @@ public class BorrowRecordService {
         this.borrowRecordRepository = borrowRecordRepository;
         this.borrowRecordMapper = borrowRecordMapper;
         this.asyncLibraryService = asyncLibraryService;
-        this.eventPublisher = eventPublisher;
         this.restClient = RestClient.create();
     }
 
