@@ -2,99 +2,209 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Library</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Library Catalog</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Книжкові шрифти -->
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; margin-bottom: 40px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .error { color: red; margin-bottom: 10px; font-weight: bold; }
-        .header { display: flex; justify-content: space-between; align-items: center; }
-        .btn { padding: 5px 10px; cursor: pointer; }
-        .btn-danger { background-color: #dc3545; color: white; border: none; }
-        .btn-success { background-color: #28a745; color: white; border: none; }
+        body {
+            /* Ефект старого паперу з легкою віньєткою */
+            background-color: #f4ebd8;
+            background-image: radial-gradient(circle, #fdfbf7 0%, #f4ebd8 70%, #e6d5b8 100%);
+            color: #3e2723; /* Колір чорнила (темно-коричневий) */
+            font-family: 'Lora', serif;
+            min-height: 100vh;
+        }
+        h1, h2, h3, h4, h5, .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+        /* "Шкіряна" навігаційна панель */
+        .navbar {
+            background-color: #4e342e !important;
+            border-bottom: 4px solid #3e2723;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .navbar-brand {
+            color: #fdfbf7 !important;
+            font-size: 1.6rem;
+            letter-spacing: 0.5px;
+        }
+        /* Картки у вигляді сторінок/книг */
+        .book-card {
+            background-color: #fdfbf7;
+            border: 1px solid #d7ccc8;
+            border-radius: 4px;
+            box-shadow: 3px 5px 15px rgba(62, 39, 35, 0.15);
+            position: relative;
+            padding: 1.5rem;
+        }
+        /* Імітація книжкового корінця (шкіряна смужка зліва) */
+        .book-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background-color: #8d6e63;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+            border-right: 1px solid #5d4037;
+        }
+        /* Стилізація таблиць під книжковий реєстр */
+        .table {
+            color: #3e2723;
+            border-color: #d7ccc8;
+        }
+        .table thead th {
+            background-color: transparent;
+            color: #4e342e;
+            border-bottom: 2px solid #8d6e63;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f5f0e6;
+        }
+        /* Книжкові кнопки */
+        .btn-book-primary {
+            background-color: #5d4037; color: #fdfbf7; border: 1px solid #3e2723;
+        }
+        .btn-book-primary:hover {
+            background-color: #3e2723; color: #fff;
+        }
+        .btn-book-outline {
+            background-color: transparent; color: #5d4037; border: 1px solid #5d4037;
+        }
+        .btn-book-outline:hover {
+            background-color: #5d4037; color: #fdfbf7;
+        }
+        .btn-book-danger {
+            background-color: #8e0000; color: #fdfbf7; border: 1px solid #4a0000;
+        }
+        .btn-book-danger:hover {
+            background-color: #4a0000; color: #fff;
+        }
+        /* Бейджі */
+        .badge-available { background-color: #4e342e; color: #fdfbf7; font-weight: normal; border: 1px solid #3e2723;}
+        .badge-unavailable { background-color: #a1887f; color: #fff; font-weight: normal; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>Library Catalog</h1>
-    <div sec:authorize="isAuthenticated()">
-        <span>Welcome, <b th:text="${username}">User</b>!</span>
-        <form th:action="@{/logout}" method="post" style="display:inline; margin-left: 10px;">
-            <button type="submit" class="btn">Logout</button>
-        </form>
+<!-- Навігаційна панель (Шкіряна палітурка) -->
+<nav class="navbar navbar-expand-lg navbar-dark mb-5">
+    <div class="container">
+        <a class="navbar-brand" href="#">📖 The Library</a>
+        <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
+            <span class="text-light me-4" style="font-family: 'Playfair Display', serif; font-style: italic;">
+                Welcome, <b th:text="${username}">Reader</b>
+            </span>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-sm btn-outline-light" style="border-radius: 0;">Leave Library</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    <!-- Повідомлення про помилку -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" style="border-radius: 2px;" role="alert">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- Панель адміністратора -->
+    <div sec:authorize="hasRole('ADMIN')" class="book-card mb-5">
+        <div class="d-flex gap-3">
+            <a th:href="@{/ui/books/new}" class="btn btn-book-primary">
+                + Add New Tome
+            </a>
+            <form th:action="@{/ui/reports/generate}" method="post" class="m-0">
+                <button type="submit" class="btn btn-book-outline">Generate Catalog Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Усі книги -->
+    <div class="book-card mb-5">
+        <h3 class="mb-4" style="border-bottom: 1px solid #d7ccc8; padding-bottom: 10px;">Library Catalog</h3>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th class="ps-3">No.</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Copies</th>
+                    <th class="pe-3">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="book : ${books}">
+                    <td class="ps-3 text-muted" th:text="${book.id}">1</td>
+                    <td class="fw-bold" style="font-size: 1.1rem;" th:text="${book.title}">Book Title</td>
+                    <td th:text="${book.author}" style="font-style: italic;">Author</td>
+                    <td>
+                        <span th:if="${book.availableCopies > 0}" class="badge badge-available rounded-pill px-3" th:text="${book.availableCopies}"></span>
+                        <span th:if="${book.availableCopies == 0}" class="badge badge-unavailable rounded-pill px-3">0</span>
+                    </td>
+                    <td class="pe-3">
+                        <div class="d-flex gap-2">
+                            <form th:if="${book.availableCopies > 0}" th:action="@{/ui/borrow/{id}(id=${book.id})}" method="post" class="m-0">
+                                <button type="submit" class="btn btn-sm btn-book-outline">Borrow</button>
+                            </form>
+                            <span th:if="${book.availableCopies == 0}" class="text-muted small align-self-center" style="font-style: italic;">Checked Out</span>
+
+                            <form sec:authorize="hasRole('ADMIN')" th:action="@{/ui/books/delete/{id}(id=${book.id})}" method="post" class="m-0">
+                                <button type="submit" class="btn btn-sm btn-book-danger">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(books)}">
+                    <td colspan="5" class="text-center text-muted py-4" style="font-style: italic;">The archives are currently empty.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Мої книги -->
+    <div sec:authorize="isAuthenticated()" class="book-card mb-4">
+        <h3 class="mb-4" style="border-bottom: 1px solid #d7ccc8; padding-bottom: 10px;">My Borrowed Tomes</h3>
+        <div class="table-responsive" th:if="${not #lists.isEmpty(myBooks)}">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th class="ps-3">Record ID</th>
+                    <th>Book Title</th>
+                    <th>Borrow Date</th>
+                    <th class="pe-3">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="record : ${myBooks}">
+                    <td class="ps-3 text-muted" th:text="${record.id}">1</td>
+                    <td class="fw-bold" style="font-size: 1.1rem;" th:text="${record.bookTitle}">Title</td>
+                    <td th:text="${#temporals.format(record.borrowDate, 'dd-MM-yyyy HH:mm')}">Date</td>
+                    <td class="pe-3">
+                        <form th:action="@{/ui/borrow/return/{id}(id=${record.id})}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-sm btn-book-primary">Return</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center py-4" th:if="${#lists.isEmpty(myBooks)}" style="color: #8d6e63; font-style: italic;">
+            You hold no books from the library at this time.
+        </div>
     </div>
 </div>
 
-<div th:if="${error}" class="error" th:text="${error}"></div>
-
-<div sec:authorize="hasRole('ADMIN')" style="margin-bottom: 20px;">
-    <a th:href="@{/ui/books/new}" class="btn btn-success" style="text-decoration: none;">+ Add New Book</a>
-
-    <form th:action="@{/ui/reports/generate}" method="post" style="display:inline; margin-left: 20px;">
-        <button type="submit" class="btn" style="background-color: #007bff; color: white; border: none; padding: 6px 8px">Generate Report</button>
-    </form>
-</div>
-
-<h2>All Books</h2>
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Title</th>
-        <th>Author</th>
-        <th>Available Copies</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="book : ${books}">
-        <td th:text="${book.id}">1</td>
-        <td th:text="${book.title}">Book Title</td>
-        <td th:text="${book.author}">Author</td>
-        <td th:text="${book.availableCopies}">0</td>
-        <td>
-            <form th:if="${book.availableCopies > 0}" th:action="@{/ui/borrow/{id}(id=${book.id})}" method="post" style="display:inline;">
-                <button type="submit" class="btn">Borrow</button>
-            </form>
-            <span th:if="${book.availableCopies == 0}" style="color: gray;">Unavailable</span>
-
-            <form sec:authorize="hasRole('ADMIN')" th:action="@{/ui/books/delete/{id}(id=${book.id})}" method="post" style="display:inline; margin-left: 10px;">
-                <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<!-- Секция текущих книг пользователя -->
-<div sec:authorize="isAuthenticated()">
-    <h2>My Borrowed Books</h2>
-    <table th:if="${not #lists.isEmpty(myBooks)}">
-        <thead>
-        <tr>
-            <th>Record ID</th>
-            <th>Book Title</th>
-            <th>Borrow Date</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="record : ${myBooks}">
-            <td th:text="${record.id}">1</td>
-            <td th:text="${record.bookTitle}">Title</td>
-            <td th:text="${#temporals.format(record.borrowDate, 'dd-MM-yyyy HH:mm')}">Date</td>
-            <td>
-                <form th:action="@{/ui/borrow/return/{id}(id=${record.id})}" method="post">
-                    <button type="submit" class="btn">Return Book</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <p th:if="${#lists.isEmpty(myBooks)}">You have no active borrowed books.</p>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
