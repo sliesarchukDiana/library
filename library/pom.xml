@@ -189,6 +189,12 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.13</version>
 				<configuration>
+					<excludes>
+						<exclude>com/ascariaa/library/grpc/**</exclude>
+						<exclude>com/ascariaa/library/adapter/**</exclude>
+						<exclude>com/ascariaa/library/config/**</exclude>
+						<exclude>com/ascariaa/library/client/**</exclude>
+					</excludes>
 				</configuration>
 				<executions>
 					<execution>

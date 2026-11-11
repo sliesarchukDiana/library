@@ -4,10 +4,11 @@ import com.ascariaa.library.domain.dto.BookCreateDto;
 import com.ascariaa.library.domain.dto.BookDto;
 import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.domain.exception.ErrorResponse;
+import com.ascariaa.library.port.BookCatalogPort;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
@@ -21,25 +22,26 @@ import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/")
 public class WebController {
 
     private final RestClient restClient;
-    private final String BOOK_SERVICE_URL = "http://book-service:8081/api/books";
+    private final BookCatalogPort bookCatalogPort;
+
     private final String BORROW_SERVICE_URL = "http://borrow-service:8082/api/borrow";
 
-    public WebController() {
+    public WebController(BookCatalogPort bookCatalogPort) {
         this.restClient = RestClient.create();
+        this.bookCatalogPort = bookCatalogPort;
     }
 
     @GetMapping
     public String index(Model model,
                         @AuthenticationPrincipal OidcUser oidcUser,
                         @RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient authClient) {
-
         String token = getBearerToken(authClient);
-
         if (oidcUser != null) {
             model.addAttribute("username", oidcUser.getPreferredUsername());
             try {
@@ -50,19 +52,15 @@ public class WebController {
                         .body(new ParameterizedTypeReference<List<BorrowRecordDto>>() {});
                 model.addAttribute("myBooks", myBooks);
             } catch (Exception e) {
-                model.addAttribute("error", "Не вдалося завантажити ваші книги");
+                model.addAttribute("error", extractErrorMessage(e));
             }
         }
 
         try {
-            List<BookDto> books = restClient.get()
-                    .uri(BOOK_SERVICE_URL)
-                    .header(HttpHeaders.AUTHORIZATION, token)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<List<BookDto>>() {});
+            List<BookDto> books = bookCatalogPort.getAllBooks(token);
             model.addAttribute("books", books);
         } catch (Exception e) {
-            model.addAttribute("error", "Не вдалося завантажити каталог книг");
+            model.addAttribute("error", extractErrorMessage(e));
         }
 
         return "index";
@@ -118,13 +116,11 @@ public class WebController {
             return "book-form";
         }
 
-        restClient.post()
-                .uri(BOOK_SERVICE_URL)
-                .header(HttpHeaders.AUTHORIZATION, getBearerToken(authClient))
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(bookCreateDto)
-                .retrieve()
-                .toBodilessEntity();
+        try {
+            bookCatalogPort.createBook(bookCreateDto, getBearerToken(authClient));
+        } catch (Exception e) {
+            log.info("Something went wrong while creating a book...");
+        }
 
         return "redirect:/";
     }
@@ -135,11 +131,7 @@ public class WebController {
                              @RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient authClient,
                              Model model) {
         try {
-            restClient.delete()
-                    .uri(BOOK_SERVICE_URL + "/" + id)
-                    .header(HttpHeaders.AUTHORIZATION, getBearerToken(authClient))
-                    .retrieve()
-                    .toBodilessEntity();
+            bookCatalogPort.deleteBook(id, getBearerToken(authClient));
             return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("error", extractErrorMessage(e));

@@ -49,6 +49,11 @@
             <artifactId>spring-boot-starter-aop</artifactId>
             <version>3.5.16</version>
         </dependency>
+        <dependency>
+            <groupId>net.devh</groupId>
+            <artifactId>grpc-server-spring-boot-starter</artifactId>
+            <version>3.1.0.RELEASE</version>
+        </dependency>
     </dependencies>
 
     <build>

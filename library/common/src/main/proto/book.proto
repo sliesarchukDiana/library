@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package com.ascariaa.library.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.ascariaa.library.grpc";
+option java_outer_classname = "BookProto";
+
+service BookGrpcService {
+  rpc GetAllBooks (Empty) returns (BookListResponse);
+  rpc CreateBook (CreateBookRequest) returns (BookResponse);
+  rpc DeleteBook (DeleteBookRequest) returns (Empty);
+}
+
+message Empty {}
+
+message CreateBookRequest {
+  string title = 1;
+  string author = 2;
+  int32 available_copies = 3;
+}
+
+message DeleteBookRequest {
+  int64 id = 1;
+}
+
+message BookResponse {
+  int64 id = 1;
+  string title = 2;
+  string author = 3;
+  int32 available_copies = 4;
+}
+
+message BookListResponse {
+  repeated BookResponse books = 1;
+}

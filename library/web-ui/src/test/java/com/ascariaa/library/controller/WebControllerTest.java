@@ -13,15 +13,19 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.ui.Model;
 import org.springframework.web.client.RestClient;
 import com.ascariaa.library.domain.dto.BookCreateDto;
+import com.ascariaa.library.port.BookCatalogPort;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.validation.BindingResult;
 
+import java.util.List;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -36,6 +40,9 @@ class WebControllerTest {
 
     @Mock
     private OidcUser oidcUser;
+
+    @Mock
+    private BookCatalogPort bookCatalogPort;
 
     @InjectMocks
     private WebController webController;
@@ -59,14 +66,9 @@ class WebControllerTest {
 
     @Test
     void deleteBook_success_redirects() {
-        mockServer.expect(requestTo("http://book-service:8081/api/books/1"))
-                .andExpect(method(HttpMethod.DELETE))
-                .andRespond(withSuccess());
-
         String view = webController.deleteBook(1L, oidcUser, null, model);
-
         assertEquals("redirect:/", view);
-        mockServer.verify();
+        verify(bookCatalogPort).deleteBook(eq(1L), anyString());
     }
 
     @Test
@@ -93,15 +95,15 @@ class WebControllerTest {
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
-        mockServer.expect(requestTo("http://book-service:8081/api/books"))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+        when(bookCatalogPort.getAllBooks("Bearer token")).thenReturn(List.of());
 
         String view = webController.index(model, oidcUser, authClient);
+
         assertEquals("index", view);
         verify(model).addAttribute("username", "testuser");
         verify(model).addAttribute(eq("myBooks"), any());
         verify(model).addAttribute(eq("books"), any());
+        verify(bookCatalogPort).getAllBooks("Bearer token");
     }
 
     @Test
@@ -116,6 +118,7 @@ class WebControllerTest {
                 .andRespond(withSuccess());
 
         String view = webController.borrowBook(1L, oidcUser, authClient, model);
+
         assertEquals("redirect:/", view);
         mockServer.verify();
     }
@@ -126,6 +129,7 @@ class WebControllerTest {
         when(bindingResult.hasErrors()).thenReturn(true);
 
         String view = webController.createBook(new BookCreateDto(), bindingResult, null);
+
         assertEquals("book-form", view);
     }
 
@@ -139,13 +143,11 @@ class WebControllerTest {
         when(authClient.getAccessToken()).thenReturn(accessToken);
         when(accessToken.getTokenValue()).thenReturn("token");
 
-        mockServer.expect(requestTo("http://book-service:8081/api/books"))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withSuccess());
+        BookCreateDto dto = new BookCreateDto();
+        String view = webController.createBook(dto, bindingResult, authClient);
 
-        String view = webController.createBook(new BookCreateDto(), bindingResult, authClient);
         assertEquals("redirect:/", view);
-        mockServer.verify();
+        verify(bookCatalogPort).createBook(dto, "Bearer token");
     }
 
     @Test
@@ -160,6 +162,7 @@ class WebControllerTest {
                 .andRespond(withSuccess());
 
         String view = webController.generateReport(oidcUser, authClient, model);
+
         assertEquals("redirect:/", view);
         mockServer.verify();
     }

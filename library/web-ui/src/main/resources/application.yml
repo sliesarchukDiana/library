@@ -16,3 +16,18 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://keycloak:8080/realms/library-realm
+app:
+  book-client:
+    type: ${BOOK_CLIENT_TYPE:http}
+    http:
+      url: ${BOOK_SERVICE_HTTP_URL:http://localhost:8081}
+      connect-timeout-ms: 2000
+      read-timeout-ms: 5000
+    grpc:
+      deadline-ms: 3000
+
+grpc:
+  client:
+    book-service:
+      address: ${BOOK_SERVICE_GRPC_URL:static://localhost:9090}
+      negotiation-type: plaintext
