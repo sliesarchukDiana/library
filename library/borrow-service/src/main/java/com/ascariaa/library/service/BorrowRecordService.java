@@ -4,16 +4,14 @@ import com.ascariaa.library.domain.dto.BorrowRecordDto;
 import com.ascariaa.library.domain.entity.BorrowRecord;
 import com.ascariaa.library.domain.enums.BorrowStatus;
 import com.ascariaa.library.domain.mapper.BorrowRecordMapper;
+import com.ascariaa.library.port.BookInventoryPort;
 import com.ascariaa.library.repository.BorrowRecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,16 +24,16 @@ public class BorrowRecordService {
     private final BorrowRecordRepository borrowRecordRepository;
     private final BorrowRecordMapper borrowRecordMapper;
     private final AsyncLibraryService asyncLibraryService;
-    private final RestClient restClient;
+    private final BookInventoryPort bookInventoryPort;
 
     public BorrowRecordService(BorrowRecordRepository borrowRecordRepository,
                                BorrowRecordMapper borrowRecordMapper,
                                AsyncLibraryService asyncLibraryService,
-                               ApplicationEventPublisher eventPublisher) {
+                               BookInventoryPort bookInventoryPort) {
         this.borrowRecordRepository = borrowRecordRepository;
         this.borrowRecordMapper = borrowRecordMapper;
         this.asyncLibraryService = asyncLibraryService;
-        this.restClient = RestClient.create();
+        this.bookInventoryPort = bookInventoryPort;
     }
 
     private String getCurrentToken() {
@@ -53,11 +51,7 @@ public class BorrowRecordService {
             throw new IllegalStateException("Limit of 3 active books exceeded");
         }
         try {
-            restClient.patch()
-                    .uri("http://book-service:8081/api/books/" + bookId + "/decrement")
-                    .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
-                    .retrieve()
-                    .toBodilessEntity();
+            bookInventoryPort.decrementCopies(bookId, getCurrentToken());
         } catch (Exception e) {
             throw new IllegalStateException("Book is not available or service error");
         }
@@ -83,13 +77,8 @@ public class BorrowRecordService {
         if (record.getStatus() == BorrowStatus.RETURNED) {
             throw new IllegalStateException("Book is already returned");
         }
-
         try {
-            restClient.patch()
-                    .uri("http://book-service:8081/api/books/" + record.getBookId() + "/increment")
-                    .header(HttpHeaders.AUTHORIZATION, getCurrentToken())
-                    .retrieve()
-                    .toBodilessEntity();
+            bookInventoryPort.incrementCopies(record.getBookId(), getCurrentToken());
         } catch (Exception e) {
             throw new IllegalStateException("Could not return book to catalog");
         }

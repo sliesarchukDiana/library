@@ -3,17 +3,14 @@ package com.ascariaa.library.service;
 import com.ascariaa.library.domain.entity.BorrowRecord;
 import com.ascariaa.library.domain.enums.BorrowStatus;
 import com.ascariaa.library.domain.mapper.BorrowRecordMapper;
+import com.ascariaa.library.port.BookInventoryPort; // Імпортуємо новий порт
 import com.ascariaa.library.repository.BorrowRecordRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestClient;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -31,16 +28,11 @@ class BorrowRecordServiceTest {
 
     @Mock private AsyncLibraryService asyncLibraryService;
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS) private RestClient restClient;
+    @Mock private BookInventoryPort bookInventoryPort;
 
     @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks private BorrowRecordService borrowRecordService;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(borrowRecordService, "restClient", restClient);
-    }
 
     @Test
     void borrowBook_limitExceeded_throwsIllegalStateException() {

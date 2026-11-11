@@ -3,12 +3,10 @@ package com.ascariaa.library.controller;
 import com.ascariaa.library.domain.dto.BookCreateDto;
 import com.ascariaa.library.domain.dto.BookDto;
 import com.ascariaa.library.domain.dto.BorrowRecordDto;
-import com.ascariaa.library.domain.exception.ErrorResponse;
 import com.ascariaa.library.port.BookCatalogPort;
+import com.ascariaa.library.port.BorrowRecordPort;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
@@ -17,8 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
 
@@ -27,14 +23,12 @@ import java.util.List;
 @RequestMapping("/")
 public class WebController {
 
-    private final RestClient restClient;
     private final BookCatalogPort bookCatalogPort;
+    private final BorrowRecordPort borrowRecordPort;
 
-    private final String BORROW_SERVICE_URL = "http://borrow-service:8082/api/borrow";
-
-    public WebController(BookCatalogPort bookCatalogPort) {
-        this.restClient = RestClient.create();
+    public WebController(BookCatalogPort bookCatalogPort, BorrowRecordPort borrowRecordPort) {
         this.bookCatalogPort = bookCatalogPort;
+        this.borrowRecordPort = borrowRecordPort;
     }
 
     @GetMapping
@@ -47,13 +41,9 @@ public class WebController {
         if (oidcUser != null) {
             model.addAttribute("username", oidcUser.getPreferredUsername());
             try {
-                myBooks = restClient.get()
-                        .uri(BORROW_SERVICE_URL + "/active")
-                        .header(HttpHeaders.AUTHORIZATION, token)
-                        .retrieve()
-                        .body(new ParameterizedTypeReference<List<BorrowRecordDto>>() {});
+                myBooks = borrowRecordPort.getActiveRecords(token);
             } catch (Exception e) {
-                model.addAttribute("error", extractErrorMessage(e));
+                model.addAttribute("error", e.getMessage());
             }
         }
 
@@ -71,9 +61,8 @@ public class WebController {
                 model.addAttribute("myBooks", myBooks);
             }
         } catch (Exception e) {
-            model.addAttribute("error", extractErrorMessage(e));
+            model.addAttribute("error", e.getMessage());
         }
-
         return "index";
     }
 
@@ -83,14 +72,10 @@ public class WebController {
                              @RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient authClient,
                              Model model) {
         try {
-            restClient.post()
-                    .uri(BORROW_SERVICE_URL + "/" + bookId)
-                    .header(HttpHeaders.AUTHORIZATION, getBearerToken(authClient))
-                    .retrieve()
-                    .toBodilessEntity();
+            borrowRecordPort.borrowBook(bookId, getBearerToken(authClient));
             return "redirect:/";
         } catch (Exception e) {
-            model.addAttribute("error", extractErrorMessage(e));
+            model.addAttribute("error", e.getMessage());
             return index(model, oidcUser, authClient);
         }
     }
@@ -101,14 +86,10 @@ public class WebController {
                              @RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient authClient,
                              Model model) {
         try {
-            restClient.post()
-                    .uri(BORROW_SERVICE_URL + "/return/" + recordId)
-                    .header(HttpHeaders.AUTHORIZATION, getBearerToken(authClient))
-                    .retrieve()
-                    .toBodilessEntity();
+            borrowRecordPort.returnBook(recordId, getBearerToken(authClient));
             return "redirect:/";
         } catch (Exception e) {
-            model.addAttribute("error", extractErrorMessage(e));
+            model.addAttribute("error", e.getMessage());
             return index(model, oidcUser, authClient);
         }
     }
@@ -126,13 +107,11 @@ public class WebController {
         if (bindingResult.hasErrors()) {
             return "book-form";
         }
-
         try {
             bookCatalogPort.createBook(bookCreateDto, getBearerToken(authClient));
         } catch (Exception e) {
-            log.info("Something went wrong while creating a book...");
+            log.info("Something went wrong while creating a book: {}", e.getMessage());
         }
-
         return "redirect:/";
     }
 
@@ -145,7 +124,7 @@ public class WebController {
             bookCatalogPort.deleteBook(id, getBearerToken(authClient));
             return "redirect:/";
         } catch (Exception e) {
-            model.addAttribute("error", extractErrorMessage(e));
+            model.addAttribute("error", e.getMessage());
             return index(model, oidcUser, authClient);
         }
     }
@@ -155,14 +134,10 @@ public class WebController {
                                  @RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient authClient,
                                  Model model) {
         try {
-            restClient.post()
-                    .uri(BORROW_SERVICE_URL + "/reports/generate")
-                    .header(HttpHeaders.AUTHORIZATION, getBearerToken(authClient))
-                    .retrieve()
-                    .toBodilessEntity();
+            borrowRecordPort.generateReport(getBearerToken(authClient));
             return "redirect:/";
         } catch (Exception e) {
-            model.addAttribute("error", extractErrorMessage(e));
+            model.addAttribute("error", e.getMessage());
             return index(model, oidcUser, authClient);
         }
     }
@@ -172,19 +147,5 @@ public class WebController {
             return "Bearer " + authClient.getAccessToken().getTokenValue();
         }
         return "";
-    }
-
-    private String extractErrorMessage(Exception e) {
-        if (e instanceof RestClientResponseException restException) {
-            try {
-                ErrorResponse errorResponse = restException.getResponseBodyAs(ErrorResponse.class);
-                if (errorResponse != null && errorResponse.message() != null) {
-                    return errorResponse.message();
-                }
-            } catch (Exception ignored) {
-            }
-            return restException.getMessage();
-        }
-        return e.getMessage();
     }
 }
